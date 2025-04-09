@@ -11,7 +11,7 @@ Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após
 
 ## 🧑‍💼 Público-alvo
 
-Todos os usuários precisam aprovar chamados.
+Todos os usuários que precisam aprovar chamados.
 
 ---
 
