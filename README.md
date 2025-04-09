@@ -2,6 +2,8 @@
 
 Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após o login** com a lista de chamados solucionados aguardando aprovação, de forma personalizada por perfil, usuário e tipo de ticket.
 ---
+![Descrição da Imagem](images/glpi.png)
+
 
 ## ✨ Funcionalidades
 
@@ -23,7 +25,6 @@ Todos os usuários que precisam aprovar chamados.
 4. Acesse o menu de configuração do plugin para definir os filtros e perfis.
 
 ---
-
 
 ## 📇 Créditos
 
