@@ -4,7 +4,6 @@ Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após
 ---
 ![Descrição da Imagem](images/glpi.png)
 
-
 ## ✨ Funcionalidades
 
 - 🛎️ Pop-up exibido automaticamente ao logar com tickets pendentes de aprovação.
