@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <name>Tickets aprovação</name>
+    <version>1.0.3</version>
+    <license>GPLv3+</license>
+    <author>David Ebsen</author>
+    <homepage>https://github.com/davidebsen/ticketsapprovalpopup</homepage>
+    <min_glpi_version>10.0.0</min_glpi_version>
+    <max_glpi_version>11.0.0</max_glpi_version>
+    <icon>ticketsapprovalpopup.png</icon>
+</plugin>
