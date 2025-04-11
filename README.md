@@ -6,13 +6,13 @@ Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após
 
 ## ✨ Funcionalidades
 
-- 🛎️ Pop-up exibido automaticamente ao logar com tickets pendentes de aprovação.
+- 🛎️ Pop-up exibido automaticamente ao logar com tickets pendentes de aprovação e planejados.
 - 👤 Filtro inteligente por usuário logado (requerente, técnico, observador etc.).
 ---
 
 ## 🧑‍💼 Público-alvo
 
-Todos os usuários que precisam aprovar chamados.
+Todos os usuários que precisam aprovar chamados ou ver os chamados que foram planejados.
 
 ---
 
