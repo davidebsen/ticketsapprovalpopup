@@ -36,4 +36,5 @@ LinkedIn: [https://www.linkedin.com/in/david-ebsen/](https://www.linkedin.com/in
 
 ---
 
-Distribuído sob licença **GPLv3+**
+Distribuído sob a [Licença MIT](LICENSE).
+**É obrigatório manter os créditos ao autor original.**
