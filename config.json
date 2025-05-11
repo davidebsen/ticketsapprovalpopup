@@ -1,9 +1,9 @@
 {
-    "name": "ticketsapprovalpopup",
-    "version": "1.0.4",
-    "author": "Your Name",
-    "license": "GPLv2+",
-    "homepage": "https://github.com/yourrepo",
-    "minGlpiVersion": "10.0.0",
-    "maxGlpiVersion": "11.0.0"
+  "name": "davidebsen/ticketsapprovalpopup",
+  "version": "1.0.4",
+  "author": "David Ebsen",
+  "license": "GPLv3+",
+  "homepage": "https://github.com/davidebsen/ticketsapprovalpopup",
+  "minGlpiVersion": "10.0.0",
+  "maxGlpiVersion": "11.0.0"
 }
