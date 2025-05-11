@@ -9,7 +9,7 @@ Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após
 
 ---
 
-![Descrição da Imagem](imagens/glpi.png)
+![Descrição da Imagem](glpi.png)
 
 ## ✨ Funcionalidades
 
