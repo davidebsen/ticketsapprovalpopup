@@ -7,8 +7,9 @@ Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após
 
 ## ✨ Funcionalidades
 
-- 🛎️ Pop-up exibido automaticamente ao logar com tickets pendentes de aprovação e planejados.
+- 🛎️ Receba um alerta automático via pop-up ao entrar no sistema sempre que houver tickets pendentes de aprovação, planejados ou aguardando validação.
 - 👤 Filtro inteligente por usuário logado (requerente, técnico, observador etc.).
+- ⚙️ Configuração para ativar ou desativar o pop-up conforme a necessidade / administrador
 ---
 
 ## 🧑‍💼 Público-alvo
