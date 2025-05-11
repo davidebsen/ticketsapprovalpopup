@@ -7,9 +7,9 @@ function plugin_version_ticketsapprovalpopup() {
     return [
         'name'           => "Tickets Approval Popup",
         'version'        => PLUGIN_TICKETSAPPROVALPOPUP_VERSION,
-        'author'         => 'Your Name',
-        'license'        => 'GPLv2+',
-        'homepage'       => 'https://github.com/yourrepo',
+        'author'         => 'David Ebsen',
+        'license'        => 'GPLv3+',
+        'homepage'       => 'https://github.com/davidebsen/ticketsapprovalpopup',
         'minGlpiVersion' => PLUGIN_TICKETSAPPROVALPOPUP_GLPIMIN,
         'maxGlpiVersion' => PLUGIN_TICKETSAPPROVALPOPUP_GLPIMAX
     ];

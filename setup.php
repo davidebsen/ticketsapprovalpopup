@@ -14,7 +14,7 @@ function plugin_version_ticketsapprovalpopup() {
 
     return [
         'name'           => __('Tickets aprovação', 'ticketsapprovalpopup'),
-        'version'        => '1.0.3',
+        'version'        => '1.0.4',
         'license'        => 'GPLv3+',
         'author'         => 'David Ebsen',
         'homepage'       => 'https://github.com/davidebsen/ticketsapprovalpopup',
