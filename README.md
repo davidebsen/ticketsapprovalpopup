@@ -23,7 +23,7 @@ Todos os usuários que precisam aprovar chamados ou ver os chamados que foram pl
 1. Acesse a pasta `plugins/` no diretório da sua instalação do GLPI.
 2. Extraia o conteúdo deste plugin dentro da pasta `ticketsapprovalpopup/`.
 3. Vá em **GLPI > Configurar > Plugins** e clique em **Instalar** e depois **Ativar**.
-4. Acesse o menu de configuração do plugin para definir os filtros e perfis.
+
 
 ---
 
