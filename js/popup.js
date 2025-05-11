@@ -1,99 +1,87 @@
+// Adicionado automaticamente
+var link = document.createElement("link");
+link.rel = "stylesheet";
+link.href = "css/popup.css";
+document.head.appendChild(link);
 
-(function () {
-    function loadScript(url, callback) {
-        var script = document.createElement('script');
-        script.src = url;
-        script.onload = callback;
-        document.head.appendChild(script);
-    }
 
-    function loadCSS(url) {
-        var link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = url;
-        document.head.appendChild(link);
-    }
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/plugins/ticketsapprovalpopup/front/popup.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                const groups = {
+                    'validacao': 'Chamados aguardando sua aprovação',
+                    'planejado': 'Chamados planejados',
+                    'solucionado': 'Chamados solucionados'
+                };
 
-    function showLoadingSpinner() {
-        const loading = document.createElement('div');
-        loading.id = 'popup-loading';
-        loading.innerHTML = '<div style="position:fixed;top:10%;left:50%;transform:translateX(-50%);padding:1em;background:#fff;border:1px solid #ccc;border-radius:5px;z-index:10000;">Carregando tickets...</div>';
-        document.body.appendChild(loading);
-    }
+                let popupContent = '';
+                for (const [groupKey, groupTitle] of Object.entries(groups)) {
+                    const filtered = data.filter(item => item.consulta === groupKey);
+                    if (filtered.length > 0) {
+                        popupContent += `<h2 style='margin-top:0; color:#007bff; font-size:18px;'>${groupTitle}</h2>`;
+                        filtered.forEach(item => {
+                            let commentDecoded = item.comment ? decodeHTMLEntities(item.comment) : '';
+                            popupContent += `
+                                <div style="border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:10px; background:#f9f9f9;">
+                                    <strong>ID:</strong> ${item.id} 
+                                    <a href="${item.link}" target="_blank" 
+                                    style="background:#007bff; color:#fff; padding:4px 8px; border-radius:4px; text-decoration:none; margin-left:5px;">Abrir</a><br>
+                                    <strong>Título:</strong> ${item.title}<br>
+                                    <strong>Abertura:</strong> ${item.opened_date || ''}<br>
+                                    ${item.solved_date ? `<strong>Solucionado em:</strong> ${item.solved_date}<br>` : ''}
+                                    ${item.request_date ? `<strong>Solicitado em:</strong> ${item.request_date}<br>` : ''}
+                                    ${commentDecoded ? `<strong>Comentário:</strong> ${commentDecoded}<br>` : ''}
+                                </div>`;
+                        });
+                    }
+                }
 
-    function hideLoadingSpinner() {
-        const loading = document.getElementById('popup-loading');
-        if (loading) loading.remove();
-    }
+                if (popupContent !== '') {
+                    const popup = document.createElement('div');
+                    popup.innerHTML = popupContent;
 
-    function alreadyShownThisSession() {
-        return sessionStorage.getItem("popupShown") === "true";
-    }
+                    popup.style.position = 'fixed';
+                    popup.style.top = '10%';
+                    popup.style.left = '50%';
+                    popup.style.transform = 'translateX(-50%)';
+                    popup.style.background = '#fff';
+                    popup.style.border = '1px solid #ccc';
+                    popup.style.padding = '20px';
+                    popup.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)';
+                    popup.style.borderRadius = '10px';
+                    popup.style.zIndex = '9999';
+                    popup.style.maxWidth = '500px';
+                    popup.style.maxHeight = '70%';
+                    popup.style.overflowY = 'auto';
+                    popup.style.fontFamily = 'Arial, sans-serif';
 
-    function markAsShown() {
-        sessionStorage.setItem("popupShown", "true");
-    }
+                    const closeButton = document.createElement('button');
+                    closeButton.innerText = 'Ver depois';
+                    closeButton.style.display = 'block';
+                    closeButton.style.margin = '20px auto 0';
+                    closeButton.style.padding = '10px 20px';
+                    closeButton.style.background = '#007bff';
+                    closeButton.style.color = '#fff';
+                    closeButton.style.border = 'none';
+                    closeButton.style.borderRadius = '4px';
+                    closeButton.style.cursor = 'pointer';
 
-    function renderPopup(tickets) {
-        if (!tickets || tickets.length === 0) return;
+                    closeButton.addEventListener('click', () => {
+                        popup.remove();
+                    });
 
-        var popupContent = '<div><h3>Tickets pendentes de aprovação:</h3>';
-
-        tickets.forEach(function (ticket) {
-            popupContent += `
-                <div style="border:1px solid #007bff; border-radius:10px; padding:1em; margin-bottom:1em;">
-                    <strong>#${ticket.id} - ${ticket.title}</strong><br>
-                    🕒 Abertura: ${ticket.open_date}<br>
-                    👤 Atribuído a: ${ticket.assigned_to || "Não atribuído"}<br>
-                    ✅ Solucionado em: ${ticket.solve_date || "Não informado"}<br>
-                    <button onclick="window.open('ticket.php?id=${ticket.id}')" style="margin-right: 8px">
-        Ver chamado
-    </button>
-    <button onclick="aprovarChamado(${ticket.id})" style="background-color:green;color:white;border:none;padding:0.5em 1em;border-radius:5px;">
-        Aprovar
-    </button>
-                            style="margin-top:0.5em;background:#007bff;color:white;border:none;padding:0.5em 1em;border-radius:5px;">
-                        Ver chamado
-                    </button>
-                </div>`;
-        });
-
-        popupContent += '</div>';
-
-        $("<div></div>").html(popupContent).dialog({
-            modal: true,
-            title: "Aprovação de Tickets",
-            width: 500,
-            close: function () {
-                markAsShown();
+                    popup.appendChild(closeButton);
+                    document.body.appendChild(popup);
+                }
             }
         });
+
+    // Função para decodificar entidades HTML
+    function decodeHTMLEntities(text) {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = text;
+        return txt.value;
     }
-
-    function initPopup() {
-        if (alreadyShownThisSession()) return;
-
-        showLoadingSpinner();
-
-        $.ajax({
-            url: "plugins/ticketsapprovalpopup/front/popup.php",
-            method: "GET",
-            dataType: "json",
-            success: function (tickets) {
-                hideLoadingSpinner();
-                renderPopup(tickets);
-            },
-            error: function () {
-                hideLoadingSpinner();
-                console.error("Erro ao buscar tickets");
-            }
-        });
-    }
-
-    if (typeof $().dialog !== "function") {
-        loadCSS("https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css");
-        loadScript("https://code.jquery.com/ui/1.13.2/jquery-ui.min.js", initPopup);
-    } else {
-        initPopup();
-    }
-})();
+});

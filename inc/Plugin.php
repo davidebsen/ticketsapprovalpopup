@@ -25,3 +25,21 @@ class Plugin {
         return true;
     }
 }
+
+public static function install() {
+    global $DB;
+    $migration = new \Migration(130);
+
+    if (!$DB->tableExists('glpi_plugin_ticketsapprovalpopup_config')) {
+        $migration->addTable('glpi_plugin_ticketsapprovalpopup_config', [
+            'id' => ['type'=>'int', 'primary'=>true, 'auto_increment'=>true, 'unsigned'=>true],
+            'enable_popup' => ['type'=>'bool', 'default'=>1]
+        ]);
+    }
+    $migration->executeMigration();
+    if (!$DB->request('glpi_plugin_ticketsapprovalpopup_config')->numrows()) {
+        $DB->insert('glpi_plugin_ticketsapprovalpopup_config', ['id'=>1,'enable_popup'=>1]);
+    }
+    return true;
+}
+

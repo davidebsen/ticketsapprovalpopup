@@ -1,16 +1,15 @@
 <?php
 
 function plugin_init_ticketsapprovalpopup() {
-    Plugin::registerClass('PluginTicketsapprovalpopupConfig', [
-        'addtabon' => ['Entity']
-    ]);
-    $PLUGIN_HOOKS['config_page']['ticketsapprovalpopup'] = 'front/config.form.php';
     global $PLUGIN_HOOKS;
-    $PLUGIN_HOOKS['add_javascript']['ticketsapprovalpopup'] = ['js/popup.js'];
-$PLUGIN_HOOKS['add_javascript']['ticketsapprovalpopup']['central'] = ['js/popup.js'];
-    $PLUGIN_HOOKS['menu_toadd']['ticketsapprovalpopup'] = ['menu' => 'front/config.form.php'];
+    Plugin::registerClass('PluginTicketsapprovalpopupConfig');
+    $PLUGIN_HOOKS['add_javascript'][] = 'plugins/ticketsapprovalpopup/js/popup.js';
+    $PLUGIN_HOOKS['add_css'][]        = 'plugins/ticketsapprovalpopup/css/popup.css';
+    $PLUGIN_HOOKS['config_page']['ticketsapprovalpopup'] = 'front/config.form.php';
+    if (PluginTicketsapprovalpopupConfig::isPopupEnabled()) {
+                $PLUGIN_HOOKS['display_central']['ticketsapprovalpopup'] = 'plugin_ticketsapprovalpopup_displaycentral';
+    }
 }
-
 function plugin_version_ticketsapprovalpopup() {
 
     return [
@@ -72,3 +71,8 @@ function plugin_ticketsapprovalpopup_displaycentral_force() {
     global $CFG_GLPI;
     include(GLPI_ROOT . "/plugins/ticketsapprovalpopup/front/forcecheck.php");
 }
+
+
+/**
+ * Initialize plugin: register JS/CSS injection hooks
+ */
