@@ -3,13 +3,7 @@
 Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após o login** com a lista de chamados solucionados aguardando aprovação e os que foram planejados, de forma personalizada por perfil, usuário e tipo de ticket.
 ---
 
-> ⚠️ **Atenção:**  
-> Os arquivos  **não é distribuído gratuitamente**.  
-> Para adquiri-lo, entre em contato diretamente através do [links no perfil](https://github.com/davidebsen).
-
----
-
-![Descrição da Imagem](glpi.png)
+![Descrição da Imagem](imagens/glpi.png)
 
 ## ✨ Funcionalidades
 
