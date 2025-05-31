@@ -1,15 +1,17 @@
 <?php
 require_once dirname(__DIR__, 3) . '/inc/includes.php';
 Session::checkLoginUser();
+
 echo '<link rel="stylesheet" type="text/css" href="'.$CFG_GLPI['root_doc'].'/plugins/ticketsapprovalpopup/css/popup.css">';
 
 global $DB, $CFG_GLPI;
 
 $user_id = Session::getLoginUserID();
 $tickets_approval = [];
-$tickets_planned = [];
+$tickets_planned   = [];
+$tickets_validation = [];
 
-// Chamados aguardando aprovação
+// Chamados aguardando aprovação (status = 5), filtrando para não mostrar tickets excluídos (is_deleted = 0)
 $query_approval = "
     SELECT t.id, t.name, t.date, t.entities_id, t.type,
            e.name AS entity_name,
@@ -23,6 +25,7 @@ $query_approval = "
     WHERE t.status = 5
       AND tu.users_id = $user_id
       AND tu.type = 1
+      AND t.is_deleted = 0
     ORDER BY t.date DESC
 ";
 
@@ -30,7 +33,7 @@ foreach ($DB->request($query_approval) as $row) {
     $tickets_approval[] = $row;
 }
 
-// Chamados planejados
+// Chamados planejados (status = 3), filtrando para não mostrar tickets excluídos (is_deleted = 0)
 $query_planned = "
     SELECT t.id, t.name, t.date, t.entities_id, t.type,
            e.name AS entity_name,
@@ -44,25 +47,12 @@ $query_planned = "
     LEFT JOIN glpi_entities e ON e.id = t.entities_id
     LEFT JOIN glpi_itilcategories c ON c.id = t.itilcategories_id
     LEFT JOIN glpi_locations l ON l.id = t.locations_id
-    WHERE t.status = 3 AND t.users_id_recipient = $user_id
+    WHERE t.status = 3
+      AND t.users_id_recipient = $user_id
+      AND t.is_deleted = 0
     ORDER BY t.date DESC
 ";
-// Chamados pendentes de validação
-$query_validation = "
-    SELECT t.id, t.name, t.date, t.entities_id, t.type,
-           e.name AS entity_name,
-           c.completename AS category_name,
-           l.name AS location_name,
-           v.comment_submission AS validation_comment,
-           v.submission_date AS validation_date
-    FROM glpi_ticketvalidations v
-    INNER JOIN glpi_tickets t ON t.id = v.tickets_id
-    LEFT JOIN glpi_entities e ON e.id = t.entities_id
-    LEFT JOIN glpi_itilcategories c ON c.id = t.itilcategories_id
-    LEFT JOIN glpi_locations l ON l.id = t.locations_id
-    WHERE v.users_id_validate = $user_id AND v.status = 2
-    ORDER BY v.submission_date DESC
-";
+
 foreach ($DB->request($query_planned) as $row) {
     $tickets_planned[] = $row;
 }
@@ -70,7 +60,8 @@ foreach ($DB->request($query_planned) as $row) {
 if (empty($tickets_approval) && empty($tickets_planned)) {
     return;
 }
-// Chamados pendentes de validação
+
+// Chamados pendentes de validação (status = 2 em glpi_ticketvalidations), filtrando para não mostrar tickets excluídos (is_deleted = 0)
 $query_validation = "
     SELECT t.id, t.name, t.date, t.entities_id, t.type,
            e.name AS entity_name,
@@ -83,9 +74,12 @@ $query_validation = "
     LEFT JOIN glpi_entities e ON e.id = t.entities_id
     LEFT JOIN glpi_itilcategories c ON c.id = t.itilcategories_id
     LEFT JOIN glpi_locations l ON l.id = t.locations_id
-    WHERE v.users_id_validate = $user_id AND v.status = 2
+    WHERE v.users_id_validate = $user_id
+      AND v.status = 2
+      AND t.is_deleted = 0
     ORDER BY v.submission_date DESC
 ";
+
 foreach ($DB->request($query_validation) as $row) {
     $tickets_validation[] = $row;
 }
@@ -98,8 +92,6 @@ function traduzirTipo($tipo) {
     return $tipos[$tipo] ?? 'Desconhecido';
 }
 ?>
-
-
 
 <script>
 function esconderAvisoERedirecionar() {
