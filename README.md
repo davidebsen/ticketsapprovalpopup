@@ -38,7 +38,7 @@ Todos os usuários que precisam aprovar chamados, ver chamados planejados ou ava
 
 ## ⚙️ Configuração
 
-Depois de ativar o plugin, acesse **Administração > Plugins > TicketsPopup > Configurações** para ativar ou desativar o pop-up. Não há necessidade de ajustes adicionais para o recurso de “Chamados Comentados” — ele já estará automaticamente estilizado conforme descrito acima.
+Depois de ativar o plugin, acesse **Administração > Plugins > TicketsPopup > Configurações** para ativar ou desativar o pop-up.
 
 ---
 
