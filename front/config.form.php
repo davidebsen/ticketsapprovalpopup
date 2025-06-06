@@ -1,59 +1,51 @@
 <?php
-// Arquivo: config.php (ou outro nome que você esteja usando para a página de configuração do plugin)
-// Neste exemplo, vamos assumir que o nome do arquivo é config.php dentro de
-//   /plugins/ticketsapprovalpopup/front/config.php
-// Ajuste o include do caminho conforme a sua estrutura real.
+/**
+ * Config page to enable / disable the popup
+ */
+include '../../../inc/includes.php';
 
-include('../../inc/includes.php'); // Caminho relativo até o includes do GLPI
+Session::checkRight('config', READ);
 
-// Verifica permissão de administrador ou perfil adequado, se necessário
-Session::checkRight('config', READ); // Ajuste se você tiver outra verificação de permissão
+global $DB;
+$table = 'glpi_plugin_ticketsapprovalpopup_config';
 
-if (isset($_POST['update'])) {
-    // Apenas a chave 'enable_popup'
-    $config = [
-        'enable_popup' => isset($_POST['enable_popup']) ? 1 : 0
-    ];
-    Config::setConfigurationValues('ticketsapprovalpopup', $config);
-    Html::displayMessageAfterRedirect(__('Configurações salvas com sucesso', 'ticketsapprovalpopup'), true);
+// ensure table/row exists
+if (!$DB->tableExists($table)) {
+    $DB->query("CREATE TABLE `$table` (
+        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `enable_popup` TINYINT(1) NOT NULL DEFAULT 1
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+    $DB->insert($table, ['id' => 1, 'enable_popup' => 1]);
+} elseif (!$DB->request($table, ['id' => 1])->numrows()) {
+    $DB->insert($table, ['id' => 1, 'enable_popup' => 1]);
 }
 
-// Carrega o valor atual da configuração
-$config = Config::getConfigurationValues('ticketsapprovalpopup');
-$enable_popup = (isset($config['enable_popup']) && $config['enable_popup'] == 1) ? 1 : 0;
+// save action
+if (isset($_POST['save'])) {
+    Session::checkRight('config', UPDATE);
+    $enable = isset($_POST['enable_popup']) ? intval($_POST['enable_popup']) : 0;
+    $DB->update($table, ['enable_popup' => $enable], ['id' => 1]);
+    Session::addMessageAfterRedirect(__('Configuration saved'), true, INFO);
+    Html::redirect($_SERVER['REQUEST_URI']);
+}
 
-// Cabeçalho GLPI: altera o título conforme a necessidade
-Html::header(
-    __('Configuração do Tickets Approval Popup', 'ticketsapprovalpopup'),
-    $_SERVER['PHP_SELF'],
-    "plugins",
-    "ticketsapprovalpopup"
-);
+// current value
+$row = $DB->request([
+    'SELECT' => 'enable_popup',
+    'FROM'   => $table,
+    'WHERE'  => ['id' => 1]
+])->current();
+$enable_popup = $row ? (int)$row['enable_popup'] : 1;
 
-// Início do formulário
-echo "<form method='post' action=''>";
-
-echo "<table class='tab_cadre'>";
-
-// Título de seção
-echo "<tr><th colspan='2'>" . __('Preferências', 'ticketsapprovalpopup') . "</th></tr>";
-
-// Linha única: Checkbox para habilitar/desabilitar o popup
-echo "<tr class='tab_bg_1'>";
-echo "  <td width='50%'>" . __('Habilitar popup', 'ticketsapprovalpopup') . "</td>";
-echo "  <td>";
-Dropdown::showYesNo("enable_popup", $enable_popup);
-echo "  </td>";
-echo "</tr>";
-
-// Botão de salvar
-echo "<tr class='tab_bg_1'><td class='center' colspan='2'>";
-echo "  <input type='submit' name='update' class='submit' value='" . _sx('button', 'Salvar') . "'>";
-echo "</td></tr>";
-
-echo "</table>";
-echo "</form>";
-
-// Rodapé GLPI
+Html::header(__('Tickets approval popup'), '', 'plugins', 'ticketsapprovalpopup', 'config');
+echo '<form method="post" action="'.$_SERVER['PHP_SELF'].'">';
+echo '<table class="tab_cadre_fixe">';
+echo '<tr class="tab_bg_1"><th colspan="2">'.__('Preferences').'</th></tr>';
+echo '<tr class="tab_bg_1"><td>'.__('Enable popup').'</td><td>';
+Dropdown::showYesNo('enable_popup', $enable_popup);
+echo '</td></tr>';
+echo '<tr class="tab_bg_2"><td colspan="2" class="center">';
+echo '<input type="submit" class="submit" name="save" value="'.__('Save').'">';
+echo '</td></tr></table>';
+Html::closeForm();
 Html::footer();
-?>
