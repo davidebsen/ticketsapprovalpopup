@@ -9,7 +9,7 @@ Session::checkLoginUser();
 global $DB, $CFG_GLPI;
 $user_id = Session::getLoginUserID();
 
-// 1) Inclui o CSS do popup
+// 1) Inclui o CSS do popup (sempre antes de qualquer outro HTML)
 echo '<link rel="stylesheet" type="text/css" href="'
      . $CFG_GLPI['root_doc']
      . '/plugins/ticketsapprovalpopup/css/popup.css">';
@@ -197,7 +197,7 @@ if (
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_approval as $ticket): ?>
-          <div class="col-md-6 col-lg-4 mb-2 d-flex">
+          <div class="col-md-6 col-lg-4 mb-1px d-flex">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-info flex-fill"
                title="Clique para abrir">
@@ -271,7 +271,7 @@ if (
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_pending as $ticket): ?>
-          <div class="col-md-6 col-lg-4 mb-2 d-flex">
+          <div class="col-md-6 col-lg-4 mb-1px d-flex">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-primary flex-fill"
                title="Clique para abrir">
@@ -336,7 +336,7 @@ if (
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_planned as $ticket): ?>
-          <div class="col-md-6 col-lg-4 mb-2 d-flex">
+          <div class="col-md-6 col-lg-4 mb-1px d-flex">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-success flex-fill"
                title="Clique para abrir">
@@ -393,8 +393,7 @@ if (
                   <?php if (!empty($ticket['task_begin']) && !empty($ticket['task_end'])): ?>
                     <li>
                       <span class="icon">🗓</span>
-                      <strong>Intervalo:</strong>&nbsp;<?= date('d/m/Y H:i', strtotime($ticket['task_begin'])) ?> —
-                      <?= date('d/m/Y H:i', strtotime($ticket['task_end'])) ?>
+                      <strong>Intervalo:</strong>&nbsp;<?= date('d/m/Y H:i', strtotime($ticket['task_begin'])) ?> — <?= date('d/m/Y H:i', strtotime($ticket['task_end'])) ?>
                     </li>
                   <?php endif; ?>
                 </ul>
@@ -416,7 +415,7 @@ if (
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_validation as $ticket): ?>
-          <div class="col-md-6 col-lg-4 mb-2 d-flex">
+          <div class="col-md-6 col-lg-4 mb-1px d-flex">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-warning flex-fill"
                title="Clique para abrir">
@@ -496,7 +495,7 @@ if (
 </div> <!-- fecha #block-screen -->
 
 <script>
-  // 1) Remove automaticamente se já tiver sido visto
+  // 1) Remove automaticamente se já tiver sido visto (localStorage)
   if (localStorage.getItem("avisosVistos") === "1") {
     document.addEventListener("DOMContentLoaded", () => {
       const aviso = document.getElementById("block-screen");
@@ -516,6 +515,6 @@ if (
   function esconderAvisoERedirecionar() {
     localStorage.setItem("avisosVistos", "1");
     const aviso = document.getElementById("block-screen");
-    if (aviso) aviso.style.display = "none";
+    if (aviso) aviso.remove();
   }
 </script>
