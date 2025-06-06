@@ -14,7 +14,7 @@ Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após
   - Chamados pendentes de aprovação  
   - Chamados planejados  
   - Chamados aguardando validação  
-  - Chamados comentados para o técnico atribuído 
+  - Chamados comentados para o técnico atribuído  ( Comentarios dentro de 24h)
 - 👤 Filtro inteligente por usuário logado (requerente, técnico, observador etc.).
 - Ícones pequenos e espaçamento reduzido, deixando os cards mais compactos e fáceis de ler, sem espaços vazios indesejados.  
 - 🎨 **Front reestruturado**: interface mais limpa, cores destacadas e disposição otimizada para facilitar a leitura rápida dos chamados.  
