@@ -14,7 +14,7 @@ Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após
   - Chamados pendentes de aprovação  
   - Chamados planejados  
   - Chamados aguardando validação  
-  - Chamados comentados para o técnico atribuído 
+  - Chamados comentados para o técnico atribuído  ( Comentarios dentro de 24h)
 - 👤 Filtro inteligente por usuário logado (requerente, técnico, observador etc.).
 - Ícones pequenos e espaçamento reduzido, deixando os cards mais compactos e fáceis de ler, sem espaços vazios indesejados.  
 - 🎨 **Front reestruturado**: interface mais limpa, cores destacadas e disposição otimizada para facilitar a leitura rápida dos chamados.  
@@ -38,7 +38,7 @@ Todos os usuários que precisam aprovar chamados, ver chamados planejados ou ava
 
 ## ⚙️ Configuração
 
-Depois de ativar o plugin, acesse **Administração > Plugins > TicketsPopup > Configurações** para ativar ou desativar o pop-up. Não há necessidade de ajustes adicionais para o recurso de “Chamados Comentados” — ele já estará automaticamente estilizado conforme descrito acima.
+Depois de ativar o plugin, acesse **Administração > Plugins > TicketsPopup > Configurações** para ativar ou desativar o pop-up.
 
 ---
 
