@@ -1,4 +1,3 @@
-// Adicionado automaticamente
 var link = document.createElement("link");
 link.rel = "stylesheet";
 link.href = "css/popup.css";
@@ -77,8 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-
-    // Função para decodificar entidades HTML
     function decodeHTMLEntities(text) {
         const txt = document.createElement('textarea');
         txt.innerHTML = text;

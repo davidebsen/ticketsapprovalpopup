@@ -1,32 +1,19 @@
 <?php
-// forcecheck.php
-// Exibe todos os tickets pendentes em um overlay de tela cheia (popup).
-// Se NÃO houver nenhum ticket em todas as categorias, NÃO exibe nada.
 
 require_once dirname(__DIR__, 3) . '/inc/includes.php';
 Session::checkLoginUser();
 
 global $DB, $CFG_GLPI;
 $user_id = Session::getLoginUserID();
-
-// 1) Inclui o CSS do popup (sempre antes de qualquer outro HTML)
 echo '<link rel="stylesheet" type="text/css" href="'
      . $CFG_GLPI['root_doc']
      . '/plugins/ticketsapprovalpopup/css/popup.css">';
-
-// Função auxiliar para traduzir tipo de ticket
 function traduzirTipo(int $tipo): string {
     return [
         1 => 'Incidente',
         2 => 'Requisição'
     ][$tipo] ?? 'Desconhecido';
 }
-
-// ==============================
-// 2) Coleta dados de cada categoria de ticket
-// ==============================
-
-// 2.1) Respostas para chamados atribuídos (incluindo setor, tipo, categoria e localização)
 $tickets_approval = [];
 $sql1 = "
     SELECT 
@@ -73,8 +60,6 @@ foreach ($DB->request($sql1) as $row) {
         'location_name' => $row['location_name']
     ];
 }
-
-// 2.2) Chamados aguardando aprovação (status = 5, usuário é solicitante)
 $tickets_pending = [];
 $sql2 = "
     SELECT 
@@ -103,8 +88,6 @@ $sql2 = "
 foreach ($DB->request($sql2) as $row) {
     $tickets_pending[] = $row;
 }
-
-// 2.3) Chamados planejados (status = 3, usuário é destinatário da tarefa)
 $tickets_planned = [];
 $sql3 = "
     SELECT 
@@ -135,8 +118,6 @@ $sql3 = "
 foreach ($DB->request($sql3) as $row) {
     $tickets_planned[] = $row;
 }
-
-// 2.4) Chamados pendentes de validação (status validations = 2)
 $tickets_validation = [];
 $sql4 = "
     SELECT 
@@ -166,30 +147,17 @@ $sql4 = "
 foreach ($DB->request($sql4) as $row) {
     $tickets_validation[] = $row;
 }
-
-// ==============================
-// 3) Se NÃO houver nenhum ticket em todas as categorias, NÃO exibe nada
-// ==============================
 if (
     empty($tickets_approval)
     && empty($tickets_pending)
     && empty($tickets_planned)
     && empty($tickets_validation)
 ) {
-    // Nenhum chamado encontrado para este usuário → encerra sem imprimir nada
     die();
 }
-
-// ==============================
-// 4) Se houver ao menos um ticket em alguma categoria, exibe todas as seções
-// ==============================
 ?>
 <div id="block-screen">
   <div class="container-popup">
-
-    <!-- ==================== -->
-    <!-- 4.1) Respostas para chamados atribuídos -->
-    <!-- ==================== -->
     <?php if (!empty($tickets_approval)): ?>
       <h2 class="subtitulo-secao text-respostas" data-icon="💬">
         COMENTÁRIO CHAMADOS
@@ -201,14 +169,12 @@ if (
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-info flex-fill"
                title="Clique para abrir">
-              <!-- Cabeçalho do cartão -->
               <div class="card-chamado-header">
                 <span class="ticket-title">
                   #<?= $ticket['id'] ?> — <?= htmlspecialchars($ticket['name']) ?>
                 </span>
                 <span class="icon-open">🡪</span>
               </div>
-              <!-- Corpo do cartão -->
               <div class="card-chamado-body">
                 <ul class="list-unstyled">
                   <?php if (trim($ticket['date']) !== ''): ?>
@@ -259,11 +225,6 @@ if (
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
-
-
-    <!-- ==================== -->
-    <!-- 4.2) Chamados aguardando aprovação -->
-    <!-- ==================== -->
     <?php if (!empty($tickets_pending)): ?>
       <h2 class="subtitulo-secao text-aprovacao" data-icon="✔️">
         AGUARDANDO SUA APROVAÇÃO
@@ -324,11 +285,6 @@ if (
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
-
-
-    <!-- ==================== -->
-    <!-- 4.3) Chamados planejados -->
-    <!-- ==================== -->
     <?php if (!empty($tickets_planned)): ?>
       <h2 class="subtitulo-secao text-planejado" data-icon="📅">
         EM PLANEJAMENTO
@@ -403,11 +359,6 @@ if (
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
-
-
-    <!-- ==================== -->
-    <!-- 4.4) Chamados pendentes de validação -->
-    <!-- ==================== -->
     <?php if (!empty($tickets_validation)): ?>
       <h2 class="subtitulo-secao text-validacao" data-icon="🛡️">
         AGUARDANDO VALIDAÇÃO
@@ -482,36 +433,28 @@ if (
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
-
-
-    <!-- Botão “Ver depois” no final de todas as seções -->
     <div class="text-center mb-2">
       <button id="ok-button" class="btn-ver-depois" onclick="esconderAvisoERedirecionar()">
         Ver depois
       </button>
     </div>
 
-  </div> <!-- fecha .container-popup -->
-</div> <!-- fecha #block-screen -->
+  </div>
+</div>
 
 <script>
-  // 1) Remove automaticamente se já tiver sido visto (localStorage)
   if (localStorage.getItem("avisosVistos") === "1") {
     document.addEventListener("DOMContentLoaded", () => {
       const aviso = document.getElementById("block-screen");
       if (aviso) aviso.remove();
     });
   }
-
-  // 2) Move o #block-screen para dentro de <body> (popup em tela cheia)
   document.addEventListener("DOMContentLoaded", function() {
     const block = document.getElementById("block-screen");
     if (block && block.parentNode !== document.body) {
       document.body.appendChild(block);
     }
   });
-
-  // 3) Ao clicar em “Ver depois”, marca no localStorage e esconde o overlay
   function esconderAvisoERedirecionar() {
     localStorage.setItem("avisosVistos", "1");
     const aviso = document.getElementById("block-screen");
