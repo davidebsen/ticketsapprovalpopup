@@ -1,84 +1,73 @@
-var link = document.createElement("link");
-link.rel = "stylesheet";
-link.href = "css/popup.css";
-document.head.appendChild(link);
+// popup.js — só estrutura e comportamento, sem estilização inline
 
+document.addEventListener('DOMContentLoaded', () => {
+  // Injeta o CSS se o hook falhar
+  if (!document.querySelector('link[href*="ticketsapprovalpopup/css/popup.css"]')) {
+    const link = document.createElement('link');
+    link.rel  = 'stylesheet';
+    link.href = GLPI_URL + '/plugins/ticketsapprovalpopup/css/popup.css';
+    document.head.appendChild(link);
+  }
 
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('/plugins/ticketsapprovalpopup/front/popup.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.length > 0) {
-                const groups = {
-                    'validacao': 'Chamados aguardando sua aprovação',
-                    'planejado': 'Chamados planejados',
-                    'solucionado': 'Chamados solucionados'
-                };
+  fetch(GLPI_URL + '/plugins/ticketsapprovalpopup/front/popup.php')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Falha ao carregar dados do popup: ' + response.status);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (!Array.isArray(data) || data.length === 0) return;
 
-                let popupContent = '';
-                for (const [groupKey, groupTitle] of Object.entries(groups)) {
-                    const filtered = data.filter(item => item.consulta === groupKey);
-                    if (filtered.length > 0) {
-                        popupContent += `<h2 style='margin-top:0; color:#007bff; font-size:18px;'>${groupTitle}</h2>`;
-                        filtered.forEach(item => {
-                            let commentDecoded = item.comment ? decodeHTMLEntities(item.comment) : '';
-                            popupContent += `
-                                <div style="border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:10px; background:#f9f9f9;">
-                                    <strong>ID:</strong> ${item.id} 
-                                    <a href="${item.link}" target="_blank" 
-                                    style="background:#007bff; color:#fff; padding:4px 8px; border-radius:4px; text-decoration:none; margin-left:5px;">Abrir</a><br>
-                                    <strong>Título:</strong> ${item.title}<br>
-                                    <strong>Abertura:</strong> ${item.opened_date || ''}<br>
-                                    ${item.solved_date ? `<strong>Solucionado em:</strong> ${item.solved_date}<br>` : ''}
-                                    ${item.request_date ? `<strong>Solicitado em:</strong> ${item.request_date}<br>` : ''}
-                                    ${commentDecoded ? `<strong>Comentário:</strong> ${commentDecoded}<br>` : ''}
-                                </div>`;
-                        });
-                    }
-                }
+      // Cria container principal
+      const popup = document.createElement('div');
+      popup.classList.add('ticketsapproval-popup');
 
-                if (popupContent !== '') {
-                    const popup = document.createElement('div');
-                    popup.innerHTML = popupContent;
+      const groups = {
+        validacao:   'Chamados aguardando sua aprovação',
+        planejado:   'Chamados planejados',
+        solucionado: 'Chamados solucionados'
+      };
 
-                    popup.style.position = 'fixed';
-                    popup.style.top = '10%';
-                    popup.style.left = '50%';
-                    popup.style.transform = 'translateX(-50%)';
-                    popup.style.background = '#fff';
-                    popup.style.border = '1px solid #ccc';
-                    popup.style.padding = '20px';
-                    popup.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)';
-                    popup.style.borderRadius = '10px';
-                    popup.style.zIndex = '9999';
-                    popup.style.maxWidth = '500px';
-                    popup.style.maxHeight = '70%';
-                    popup.style.overflowY = 'auto';
-                    popup.style.fontFamily = 'Arial, sans-serif';
+      // Monta conteúdo
+      Object.entries(groups).forEach(([key, title]) => {
+        const items = data.filter(i => i.consulta === key);
+        if (!items.length) return;
 
-                    const closeButton = document.createElement('button');
-                    closeButton.innerText = 'Ver depois';
-                    closeButton.style.display = 'block';
-                    closeButton.style.margin = '20px auto 0';
-                    closeButton.style.padding = '10px 20px';
-                    closeButton.style.background = '#007bff';
-                    closeButton.style.color = '#fff';
-                    closeButton.style.border = 'none';
-                    closeButton.style.borderRadius = '4px';
-                    closeButton.style.cursor = 'pointer';
+        const h2 = document.createElement('h2');
+        h2.textContent = title;
+        popup.appendChild(h2);
 
-                    closeButton.addEventListener('click', () => {
-                        popup.remove();
-                    });
-
-                    popup.appendChild(closeButton);
-                    document.body.appendChild(popup);
-                }
-            }
+        items.forEach(item => {
+          const entry = document.createElement('div');
+          entry.classList.add('ticketsapproval-entry');
+          entry.innerHTML = `
+            <strong>ID:</strong> ${item.id}
+            <a href="${item.link}" target="_blank">Abrir</a><br>
+            <strong>Título:</strong> ${item.title}<br>
+            ${item.opened_date ? `<strong>Abertura:</strong> ${item.opened_date}<br>` : ''}
+            ${item.solved_date ? `<strong>Solucionado em:</strong> ${item.solved_date}<br>` : ''}
+            ${item.request_date ? `<strong>Solicitado em:</strong> ${item.request_date}<br>` : ''}
+            ${item.comment ? `<strong>Comentário:</strong> ${decodeHTMLEntities(item.comment)}<br>` : ''}
+          `;
+          popup.appendChild(entry);
         });
-    function decodeHTMLEntities(text) {
-        const txt = document.createElement('textarea');
-        txt.innerHTML = text;
-        return txt.value;
-    }
+      });
+
+      // Botão de fechar
+      const btn = document.createElement('button');
+      btn.classList.add('ticketsapproval-close-btn');
+      btn.textContent = 'Ver depois';
+      btn.addEventListener('click', () => popup.remove());
+      popup.appendChild(btn);
+
+      document.body.appendChild(popup);
+    })
+    .catch(err => console.error(err));
+
+  function decodeHTMLEntities(text) {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = text;
+    return txt.value;
+  }
 });

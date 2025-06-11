@@ -2,19 +2,24 @@
 
 function plugin_init_ticketsapprovalpopup() {
     global $PLUGIN_HOOKS;
+
     Plugin::registerClass('PluginTicketsapprovalpopupConfig');
+
+    // → hooks que faltavam e impedem o carregamento do popup
     $PLUGIN_HOOKS['add_javascript'][] = 'plugins/ticketsapprovalpopup/js/popup.js';
     $PLUGIN_HOOKS['add_css'][]        = 'plugins/ticketsapprovalpopup/css/popup.css';
+
     $PLUGIN_HOOKS['config_page']['ticketsapprovalpopup'] = 'front/config.form.php';
     if (PluginTicketsapprovalpopupConfig::isPopupEnabled()) {
-                $PLUGIN_HOOKS['display_central']['ticketsapprovalpopup'] = 'plugin_ticketsapprovalpopup_displaycentral';
+        $PLUGIN_HOOKS['display_central']['ticketsapprovalpopup']
+            = 'plugin_ticketsapprovalpopup_displaycentral';
     }
 }
 function plugin_version_ticketsapprovalpopup() {
 
     return [
         'name'           => __('Tickets aprovação', 'ticketsapprovalpopup'),
-        'version'        => '1.0.4',
+        'version'        => '1.0.9',
         'license'        => 'GPLv3+',
         'author'         => 'David Ebsen',
         'homepage'       => 'https://github.com/davidebsen/ticketsapprovalpopup',
