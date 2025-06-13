@@ -156,12 +156,12 @@ if (
     die();
 }
 ?>
-<div id="block-screen">
-  <div class="container-popup">
+<div id="tap-block-screen">
+  <div class="tap-container-popup">
     <?php if (!empty($tickets_approval)): ?>
-      <h2 class="subtitulo-secao text-respostas" data-icon="💬">
+      <h2 class="tap-subtitulo-secao text-respostas" data-icon="💬">
         COMENTÁRIO CHAMADOS
-        <span class="badge badge-pill badge-info"><?= count($tickets_approval) ?></span>
+        <span class="tap-badge badge-pill badge-info"><?= count($tickets_approval) ?></span>
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_approval as $ticket): ?>
@@ -226,9 +226,9 @@ if (
       </div>
     <?php endif; ?>
     <?php if (!empty($tickets_pending)): ?>
-      <h2 class="subtitulo-secao text-aprovacao" data-icon="✔️">
+      <h2 class="tap-subtitulo-secao text-aprovacao" data-icon="✔️">
         AGUARDANDO SUA APROVAÇÃO
-        <span class="badge badge-pill badge-primary"><?= count($tickets_pending) ?></span>
+        <span class="tap-badge badge-pill badge-primary"><?= count($tickets_pending) ?></span>
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_pending as $ticket): ?>
@@ -286,9 +286,9 @@ if (
       </div>
     <?php endif; ?>
     <?php if (!empty($tickets_planned)): ?>
-      <h2 class="subtitulo-secao text-planejado" data-icon="📅">
+      <h2 class="tap-subtitulo-secao text-planejado" data-icon="📅">
         EM PLANEJAMENTO
-        <span class="badge badge-pill badge-success"><?= count($tickets_planned) ?></span>
+        <span class="tap-badge badge-pill badge-success"><?= count($tickets_planned) ?></span>
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_planned as $ticket): ?>
@@ -360,9 +360,9 @@ if (
       </div>
     <?php endif; ?>
     <?php if (!empty($tickets_validation)): ?>
-      <h2 class="subtitulo-secao text-validacao" data-icon="🛡️">
+      <h2 class="tap-subtitulo-secao text-validacao" data-icon="🛡️">
         AGUARDANDO VALIDAÇÃO
-        <span class="badge badge-pill badge-warning"><?= count($tickets_validation) ?></span>
+        <span class="tap-badge badge-pill badge-warning"><?= count($tickets_validation) ?></span>
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_validation as $ticket): ?>

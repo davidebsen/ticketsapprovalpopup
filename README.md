@@ -1,7 +1,3 @@
-# Plugim em validação em alguma casos esta ocultando o dashboard.
-## Deixado versão antiga funcional em zip junto ao repositorio. 
-
-
 # Plugin GLPI - TicketsPopup
 
 Plugin desenvolvido para exibir automaticamente uma **notificação pop-up após o login** com a lista de chamados pendentes de aprovação, planejados, pendentes de validação ou chamados comentados para o técnico atribuído, de forma personalizada por perfil, usuário e tipo de ticket. O front foi totalmente reestruturado, proporcionando uma visão mais clara e objetiva das informações.
