@@ -86,18 +86,7 @@
   `;
   shadow.appendChild(style);
 
-  const popup = document.createElement('div');
-  popup.className = 'tap-block-screen-backdrop';
-  popup.innerHTML = `
-    <div class="tap-block-screen-popup">
-      <button class="tap-block-screen-close" title="Fechar">&times;</button>
-      <div class="tap-block-screen-title">Atenção!</div>
-      <div class="tap-block-screen-body">
-        Seu conteúdo do popup vai aqui.
-      </div>
-    </div>
-  `;
-  shadow.appendChild(popup);
+  
 
   shadow.querySelector('.tap-block-screen-close').onclick = closePopup;
   shadow.querySelector('.tap-block-screen-backdrop').onclick = function (e) {

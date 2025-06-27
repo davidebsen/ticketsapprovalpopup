@@ -1,11 +1,5 @@
-/*======================================================================================
-  popup.css — Versão otimizada (fontes menores, espaçamentos reduzidos)
-======================================================================================*/
 
-/* ===================================================================
-   1) Overlay em tela cheia (#tap-block-screen)
-   =================================================================== */
-#tap-block-screen {
+#block-screen {
   position: fixed;
   top: 0;
   left: 0;
@@ -23,19 +17,15 @@
   backdrop-filter: blur(4px);
 }
 
-/* ===================================================================
-   2) Container interno do overlay (.tap-container-popup)
-   =================================================================== */
-#tap-block-screen .tap-container-popup {
+
+#block-screen .container-popup {
   max-width: 1100px;
   width: 100%;
   padding: 0 16px;            /* espaços laterais reduzidos */
 }
 
-/* ===================================================================
-   3) Títulos de seção (.tap-subtitulo-secao)
-   =================================================================== */
-.tap-subtitulo-secao {
+
+.subtitulo-secao {
   font-size: 1.1rem;           /* fonte menor */
   font-weight: 700;
   margin-top: 0.8rem;          /* margens mais compactas */
@@ -47,12 +37,12 @@
   color: #2c3e50;
   text-transform: uppercase;
 }
-.tap-subtitulo-secao::before {
+.subtitulo-secao::before {
   content: attr(data-icon);
   margin-right: 0.4rem;
   font-size: 1.1rem;
 }
-.tap-subtitulo-secao .badge {
+.subtitulo-secao .badge {
   margin-left: auto;
   font-size: 0.75rem;          /* badge menor */
   font-weight: 700;
@@ -61,10 +51,10 @@
 }
 
 /* Cores para cada subtítulo e badge */
-.tap-text-respostas {
+.text-respostas {
   color: #2980b9;             /* azul escuro */
 }
-.tap-text-respostas .badge {
+.text-respostas .badge {
   background-color: #3498db;  /* azul vibrante */
   color: #ffffff;
 }
@@ -90,11 +80,7 @@
   color: #ffffff;
 }
 
-/* ===================================================================
-   4) Cards clicáveis (.card-chamado + .card-link)
-   =================================================================== */
 
-/* 4.1) <a> como container flex, sem sublinhado */
 .card-link {
   display: flex;
   flex-direction: column;
@@ -104,7 +90,7 @@
   height: 100%;
 }
 
-/* 4.2) .card-chamado: contêiner branco, bordas arredondadas pequenas, sombra leve */
+
 .card-chamado {
   display: flex;
   flex-direction: column;
@@ -121,13 +107,13 @@
   transform: translateY(-3px);
 }
 
-/* 4.3) Cabeçalho do card (número/título + ícone) */
+
 .card-chamado-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0.8rem;      /* padding reduzido */
-  font-size: 0.9rem;           /* fonte menor */
+  font-size: 1.0rem;           /* fonte menor */
   font-weight: 700;
   border-bottom: 2px solid #dcdde1;
   transition: background-color 0.25s ease;
@@ -158,8 +144,7 @@
   color: #ba4a00;
 }
 
-/* 4.5) Corpo do card com lista e ícones
-     - pads e margens menores para economia de espaço */
+
 .card-chamado-body {
   padding: 0.6rem 0.8rem;       /* menor que antes */
   font-size: 0.85rem;           /* fonte menor */
@@ -186,9 +171,6 @@
   flex-shrink: 0;
 }
 
-/* ===================================================================
-   5) Botão “Ver depois” (.btn-ver-depois)
-   =================================================================== */
 .btn-ver-depois {
     margin-top: 20px;
     padding: 10px 30px;
@@ -204,27 +186,22 @@
   background-color: #165a9c;
 }
 
-/* ===================================================================
-   6) Classe utilitária para margem mínima de 1px (.mb-xs-1px)
-   =================================================================== */
+
 .mb-xs-1px {
   margin-bottom: 1px !important;
 }
 
-/* ===================================================================
-   7) Responsividade (telinhas até 576px)
-   =================================================================== */
 @media (max-width: 576px) {
-  #tap-block-screen {
+  #block-screen {
     padding-top: 20px;
   }
-  .tap-container-popup {
+  .container-popup {
     padding: 0 8px;
   }
-  .tap-subtitulo-secao {
+  .subtitulo-secao {
     font-size: 1rem;             /* menor ainda */
   }
-  .tap-subtitulo-secao::before {
+  .subtitulo-secao::before {
     font-size: 1rem;             /* ícone também menor */
     margin-right: 0.3rem;
   }

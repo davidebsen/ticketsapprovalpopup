@@ -1,21 +1,23 @@
 <?php
-
-require_once dirname(__DIR__, 3) . '/inc/includes.php';
+include '../../../inc/includes.php';
 Session::checkLoginUser();
-
 global $DB, $CFG_GLPI;
+
 $user_id = Session::getLoginUserID();
+if (!$user_id || $user_id <= 0) {
+    echo '<script>console.error("Usuário não autenticado");</script>';
+    exit;
+}
 echo '<link rel="stylesheet" type="text/css" href="'
      . $CFG_GLPI['root_doc']
      . '/plugins/ticketsapprovalpopup/css/popup.css">';
-function traduzirTipo(int $tipo): string {
-    return [
-        1 => 'Incidente',
-        2 => 'Requisição'
-    ][$tipo] ?? 'Desconhecido';
-}
+
 $tickets_approval = [];
-$sql1 = "
+$tickets_planned = [];
+$tickets_followups = [];
+$tickets_validation = [];
+
+$query_approval = "
     SELECT 
         t.id,
         t.name,
@@ -48,49 +50,12 @@ $sql1 = "
      AND f.date >= SUBTIME(NOW(), '15:15:00')
    ORDER BY f.date DESC
 ";
-foreach ($DB->request($sql1) as $row) {
-    $tickets_approval[] = [
-        'id'            => $row['id'],
-        'name'          => $row['name'],
-        'date'          => $row['date'],
-        'content'       => $row['content'],
-        'entity_name'   => $row['entity_name'],
-        'type'          => $row['type'],
-        'category_name' => $row['category_name'],
-        'location_name' => $row['location_name']
-    ];
+foreach ($DB->request($query_approval) as $row) {
+    $tickets_approval[] = $row;
 }
-$tickets_pending = [];
-$sql2 = "
-    SELECT 
-        t.id,
-        t.name,
-        t.date,
-        e.name AS entity_name,
-        t.type,
-        tc.name AS category_name,
-        l.name AS location_name
-    FROM glpi_tickets t
-    LEFT JOIN glpi_entities e 
-      ON e.id = t.entities_id
-    LEFT JOIN glpi_itilcategories tc 
-      ON tc.id = t.itilcategories_id
-    LEFT JOIN glpi_locations l 
-      ON l.id = t.locations_id
-    INNER JOIN glpi_tickets_users tu 
-      ON tu.tickets_id = t.id
-   WHERE t.status = 5
-     AND tu.users_id = $user_id
-     AND tu.type = 1
-     AND t.is_deleted = 0
-   ORDER BY t.date DESC
-";
-foreach ($DB->request($sql2) as $row) {
-    $tickets_pending[] = $row;
-}
-$tickets_planned = [];
-$sql3 = "
-    SELECT 
+
+$query_planned = "
+     SELECT 
         t.id,
         t.name,
         t.date,
@@ -115,11 +80,39 @@ $sql3 = "
      AND t.is_deleted = 0
    ORDER BY t.date DESC
 ";
-foreach ($DB->request($sql3) as $row) {
+foreach ($DB->request($query_planned) as $row) {
     $tickets_planned[] = $row;
 }
-$tickets_validation = [];
-$sql4 = "
+
+$query_followups = "
+    SELECT 
+        t.id, t.name, t.date, t.entities_id, t.type,
+        e.name AS entity_name,
+        c.completename AS category_name,
+        l.name AS location_name,
+        f.content AS followup_content
+    FROM glpi_tickets t
+    JOIN glpi_itilfollowups f 
+      ON f.items_id = t.id AND f.itemtype = 'Ticket'
+    JOIN glpi_tickets_users tech 
+      ON tech.tickets_id = t.id
+    JOIN glpi_tickets_users req  
+      ON req.tickets_id = t.id AND req.type = 1
+    LEFT JOIN glpi_entities e ON e.id = t.entities_id
+    LEFT JOIN glpi_itilcategories c ON c.id = t.itilcategories_id
+    LEFT JOIN glpi_locations l ON l.id = t.locations_id
+    WHERE tech.users_id = $user_id
+      AND tech.type IN (2, 6)
+      AND f.users_id = req.users_id
+      AND t.is_deleted = 0
+      AND f.date >= SUBTIME(NOW(), '15:15:00')
+    ORDER BY f.date DESC
+";
+foreach ($DB->request($query_followups) as $row) {
+    $tickets_followups[] = $row;
+}
+
+$query_validation = "
     SELECT 
         t.id,
         t.name,
@@ -144,28 +137,35 @@ $sql4 = "
      AND t.is_deleted = 0
    ORDER BY v.submission_date DESC
 ";
-foreach ($DB->request($sql4) as $row) {
+foreach ($DB->request($query_validation) as $row) {
     $tickets_validation[] = $row;
 }
+
 if (
-    empty($tickets_approval)
-    && empty($tickets_pending)
-    && empty($tickets_planned)
-    && empty($tickets_validation)
+    empty($tickets_approval) &&
+    empty($tickets_planned) &&
+    empty($tickets_followups) &&
+    empty($tickets_validation)
 ) {
-    die();
+    return;
 }
+
+function traduzirTipo($tipo) {
+    $tipos = [1 => 'Incidente', 2 => 'Requisição'];
+    return $tipos[$tipo] ?? 'Desconhecido';
+}
+
 ?>
-<div id="tap-block-screen">
-  <div class="tap-container-popup">
+<div id="block-screen">
+  <div class="container-popup">
     <?php if (!empty($tickets_approval)): ?>
-      <h2 class="tap-subtitulo-secao text-respostas" data-icon="💬">
+      <h2 class="subtitulo-secao text-respostas" data-icon="💬">
         COMENTÁRIO CHAMADOS
-        <span class="tap-badge badge-pill badge-info"><?= count($tickets_approval) ?></span>
+        <span class="badge badge-pill badge-info"><?= count($tickets_approval) ?></span>
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_approval as $ticket): ?>
-          <div class="col-md-6 col-lg-4 mb-1px d-flex">
+          <div class="col-md-6 col-lg-4 mb-1px d-flex"style="margin-bottom: 4px;">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-info flex-fill"
                title="Clique para abrir">
@@ -226,13 +226,13 @@ if (
       </div>
     <?php endif; ?>
     <?php if (!empty($tickets_pending)): ?>
-      <h2 class="tap-subtitulo-secao text-aprovacao" data-icon="✔️">
+      <h2 class="subtitulo-secao text-aprovacao" data-icon="✔️">
         AGUARDANDO SUA APROVAÇÃO
-        <span class="tap-badge badge-pill badge-primary"><?= count($tickets_pending) ?></span>
+        <span class="badge badge-pill badge-primary"><?= count($tickets_pending) ?></span>
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_pending as $ticket): ?>
-          <div class="col-md-6 col-lg-4 mb-1px d-flex">
+          <<div class="col-md-6 col-lg-4 mb-1px d-flex"style="margin-bottom: 4px;">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-primary flex-fill"
                title="Clique para abrir">
@@ -286,13 +286,13 @@ if (
       </div>
     <?php endif; ?>
     <?php if (!empty($tickets_planned)): ?>
-      <h2 class="tap-subtitulo-secao text-planejado" data-icon="📅">
+      <h2 class="subtitulo-secao text-planejado" data-icon="📅">
         EM PLANEJAMENTO
-        <span class="tap-badge badge-pill badge-success"><?= count($tickets_planned) ?></span>
+        <span class="badge badge-pill badge-success"><?= count($tickets_planned) ?></span>
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_planned as $ticket): ?>
-          <div class="col-md-6 col-lg-4 mb-1px d-flex">
+          <div class="col-md-6 col-lg-4 mb-1px d-flex"style="margin-bottom: 4px;">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-success flex-fill"
                title="Clique para abrir">
@@ -360,13 +360,13 @@ if (
       </div>
     <?php endif; ?>
     <?php if (!empty($tickets_validation)): ?>
-      <h2 class="tap-subtitulo-secao text-validacao" data-icon="🛡️">
+      <h2 class="subtitulo-secao text-validacao" data-icon="🛡️">
         AGUARDANDO VALIDAÇÃO
-        <span class="tap-badge badge-pill badge-warning"><?= count($tickets_validation) ?></span>
+        <span class="badge badge-pill badge-warning"><?= count($tickets_validation) ?></span>
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_validation as $ticket): ?>
-          <div class="col-md-6 col-lg-4 mb-1px d-flex">
+          <div class="col-md-6 col-lg-4 mb-1px d-flex"style="margin-bottom: 4px;">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-warning flex-fill"
                title="Clique para abrir">
