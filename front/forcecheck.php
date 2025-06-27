@@ -12,13 +12,14 @@ echo '<link rel="stylesheet" type="text/css" href="'
      . $CFG_GLPI['root_doc']
      . '/plugins/ticketsapprovalpopup/css/popup.css">';
 
+$tickets_validation = [];
 $tickets_approval = [];
 $tickets_planned = [];
-$tickets_followups = [];
-$tickets_validation = [];
+$tickets_pending = [];
 
+// Comentários do requerente (técnico logado)
 $query_approval = "
-    SELECT 
+  SELECT 
         t.id,
         t.name,
         t.date,
@@ -29,33 +30,29 @@ $query_approval = "
         l.name AS location_name
     FROM glpi_tickets t
     JOIN glpi_itilfollowups f 
-      ON f.items_id = t.id
-     AND f.itemtype = 'Ticket'
+      ON f.items_id = t.id AND f.itemtype = 'Ticket'
     JOIN glpi_tickets_users tech 
-      ON tech.tickets_id = t.id
+      ON tech.tickets_id = t.id AND tech.users_id = $user_id AND tech.type IN (2,6)
     JOIN glpi_tickets_users req  
-      ON req.tickets_id = t.id 
-     AND req.type = 1
-   LEFT JOIN glpi_entities e 
+      ON req.tickets_id = t.id AND req.type = 1
+    LEFT JOIN glpi_entities e 
       ON e.id = t.entities_id
-   LEFT JOIN glpi_itilcategories tc 
+    LEFT JOIN glpi_itilcategories tc 
       ON tc.id = t.itilcategories_id
-   LEFT JOIN glpi_locations l 
+    LEFT JOIN glpi_locations l 
       ON l.id = t.locations_id
-   WHERE tech.users_id = $user_id
-     AND tech.type IN (2, 6)
-     AND f.users_id = req.users_id
-     AND f.users_id != $user_id
-     AND t.is_deleted = 0
-     AND f.date >= SUBTIME(NOW(), '15:15:00')
-   ORDER BY f.date DESC
+    WHERE f.users_id = req.users_id
+      AND t.is_deleted = 0
+      AND f.date >= SUBTIME(NOW(), '15:15:00')
+    ORDER BY f.date DESC
 ";
 foreach ($DB->request($query_approval) as $row) {
     $tickets_approval[] = $row;
 }
 
+// Chamados planejados (requerente)
 $query_planned = "
-     SELECT 
+    SELECT 
         t.id,
         t.name,
         t.date,
@@ -67,6 +64,10 @@ $query_planned = "
         task.begin   AS task_begin,
         task.end     AS task_end
     FROM glpi_tickets t
+    JOIN glpi_tickets_users tu 
+      ON tu.tickets_id = t.id 
+     AND tu.type IN (1,2,6)
+     AND tu.users_id = $user_id
     LEFT JOIN glpi_tickettasks task 
       ON task.tickets_id = t.id
     LEFT JOIN glpi_entities e 
@@ -76,44 +77,47 @@ $query_planned = "
     LEFT JOIN glpi_locations l 
       ON l.id = t.locations_id
    WHERE t.status = 3
-     AND t.users_id_recipient = $user_id
      AND t.is_deleted = 0
    ORDER BY t.date DESC
 ";
+
 foreach ($DB->request($query_planned) as $row) {
     $tickets_planned[] = $row;
 }
 
-$query_followups = "
+// Chamados solucionados (requerente)
+$query_solved = "
     SELECT 
-        t.id, t.name, t.date, t.entities_id, t.type,
+        t.id,
+        t.name,
+        t.date,
         e.name AS entity_name,
-        c.completename AS category_name,
-        l.name AS location_name,
-        f.content AS followup_content
+        t.type,
+        tc.name AS category_name,
+        l.name AS location_name
     FROM glpi_tickets t
-    JOIN glpi_itilfollowups f 
-      ON f.items_id = t.id AND f.itemtype = 'Ticket'
-    JOIN glpi_tickets_users tech 
-      ON tech.tickets_id = t.id
-    JOIN glpi_tickets_users req  
-      ON req.tickets_id = t.id AND req.type = 1
-    LEFT JOIN glpi_entities e ON e.id = t.entities_id
-    LEFT JOIN glpi_itilcategories c ON c.id = t.itilcategories_id
-    LEFT JOIN glpi_locations l ON l.id = t.locations_id
-    WHERE tech.users_id = $user_id
-      AND tech.type IN (2, 6)
-      AND f.users_id = req.users_id
-      AND t.is_deleted = 0
-      AND f.date >= SUBTIME(NOW(), '15:15:00')
-    ORDER BY f.date DESC
+    LEFT JOIN glpi_entities e 
+      ON e.id = t.entities_id
+    LEFT JOIN glpi_itilcategories tc 
+      ON tc.id = t.itilcategories_id
+    LEFT JOIN glpi_locations l 
+      ON l.id = t.locations_id
+    INNER JOIN glpi_tickets_users tu 
+      ON tu.tickets_id = t.id
+   WHERE t.status = 5
+     AND tu.users_id = $user_id
+     AND tu.type = 1
+     AND t.is_deleted = 0
+   ORDER BY t.date DESC
 ";
-foreach ($DB->request($query_followups) as $row) {
-    $tickets_followups[] = $row;
+
+foreach ($DB->request($query_solved) as $row) {
+    $tickets_pending[] = $row;
 }
 
+// Chamados aguardando validação (aprovador)
 $query_validation = "
-    SELECT 
+   SELECT 
         t.id,
         t.name,
         t.date,
@@ -137,15 +141,16 @@ $query_validation = "
      AND t.is_deleted = 0
    ORDER BY v.submission_date DESC
 ";
+
 foreach ($DB->request($query_validation) as $row) {
     $tickets_validation[] = $row;
 }
 
 if (
-    empty($tickets_approval) &&
+    empty($tickets_validation) &&
     empty($tickets_planned) &&
-    empty($tickets_followups) &&
-    empty($tickets_validation)
+    empty($tickets_pending) &&
+    empty($tickets_approval)
 ) {
     return;
 }
@@ -232,7 +237,7 @@ function traduzirTipo($tipo) {
       </h2>
       <div class="row justify-content-center mb-xs-1px">
         <?php foreach ($tickets_pending as $ticket): ?>
-          <<div class="col-md-6 col-lg-4 mb-1px d-flex"style="margin-bottom: 4px;">
+          <div class="col-md-6 col-lg-4 mb-1px d-flex"style="margin-bottom: 4px;">
             <a href="<?= $CFG_GLPI['root_doc'] ?>/front/ticket.form.php?id=<?= $ticket['id'] ?>"
                class="card-chamado card-link card-chamado-primary flex-fill"
                title="Clique para abrir">
