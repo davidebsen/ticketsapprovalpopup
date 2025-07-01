@@ -15,42 +15,47 @@ echo '<link rel="stylesheet" type="text/css" href="'
 $tickets_validation = [];
 $tickets_approval = [];
 $tickets_planned = [];
+$tickets_solved = [];
 $tickets_pending = [];
 
-// Comentários do requerente (técnico logado)
+// Comentários do requerente (técnico logado) - apenas o último por chamado nas últimas 24h e ignorando chamados fechados
 $query_approval = "
-  SELECT 
-        t.id,
-        t.name,
-        t.date,
-        f.content,
-        e.name AS entity_name,
-        t.type,
-        tc.name AS category_name,
-        l.name AS location_name
-    FROM glpi_tickets t
-    JOIN glpi_itilfollowups f 
-      ON f.items_id = t.id AND f.itemtype = 'Ticket'
-    JOIN glpi_tickets_users tech 
-      ON tech.tickets_id = t.id AND tech.users_id = $user_id AND tech.type IN (2,6)
-    JOIN glpi_tickets_users req  
-      ON req.tickets_id = t.id AND req.type = 1
-    LEFT JOIN glpi_entities e 
-      ON e.id = t.entities_id
-    LEFT JOIN glpi_itilcategories tc 
-      ON tc.id = t.itilcategories_id
-    LEFT JOIN glpi_locations l 
-      ON l.id = t.locations_id
+    SELECT f.id AS followup_id,
+           t.id,
+           t.name,
+           t.date,
+           f.content,
+           e.name AS entity_name,
+           t.type,
+           tc.name AS category_name,
+           l.name AS location_name
+    FROM glpi_itilfollowups f
+    INNER JOIN (
+        SELECT MAX(f2.id) as id
+        FROM glpi_itilfollowups f2
+        INNER JOIN glpi_tickets t2 ON t2.id = f2.items_id
+        WHERE f2.itemtype = 'Ticket'
+          AND f2.date >= SUBTIME(NOW(), '24:00:00')
+          AND t2.status NOT IN (" . implode(",", Ticket::getClosedStatusArray()) . ")
+        GROUP BY f2.items_id
+    ) AS ultimos ON ultimos.id = f.id
+    INNER JOIN glpi_tickets t ON t.id = f.items_id
+    JOIN glpi_tickets_users tech ON tech.tickets_id = t.id AND tech.users_id = $user_id AND tech.type IN (2,6)
+    JOIN glpi_tickets_users req ON req.tickets_id = t.id AND req.type = 1
+    LEFT JOIN glpi_entities e ON e.id = t.entities_id
+    LEFT JOIN glpi_itilcategories tc ON tc.id = t.itilcategories_id
+    LEFT JOIN glpi_locations l ON l.id = t.locations_id
     WHERE f.users_id = req.users_id
       AND t.is_deleted = 0
-      AND f.date >= SUBTIME(NOW(), '15:15:00')
+      AND t.status NOT IN (" . implode(",", Ticket::getClosedStatusArray()) . ")
     ORDER BY f.date DESC
 ";
+
 foreach ($DB->request($query_approval) as $row) {
     $tickets_approval[] = $row;
 }
 
-// Chamados planejados (requerente)
+// Chamados planejados (requerente ou técnico)
 $query_planned = "
     SELECT 
         t.id,
@@ -448,12 +453,12 @@ function traduzirTipo($tipo) {
 </div>
 
 <script>
-  if (localStorage.getItem("avisosVistos") === "1") {
-    document.addEventListener("DOMContentLoaded", () => {
-      const aviso = document.getElementById("block-screen");
-      if (aviso) aviso.remove();
-    });
+  document.addEventListener("DOMContentLoaded", () => {
+  const aviso = document.getElementById("block-screen");
+  if (aviso && aviso.parentNode !== document.body) {
+    document.body.appendChild(aviso);
   }
+   });
   document.addEventListener("DOMContentLoaded", function() {
     const block = document.getElementById("block-screen");
     if (block && block.parentNode !== document.body) {
@@ -465,4 +470,17 @@ function traduzirTipo($tipo) {
     const aviso = document.getElementById("block-screen");
     if (aviso) aviso.remove();
   }
+    setInterval(() => {
+    fetch(window.location.href)
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const novoPopup = doc.querySelector("#block-screen");
+        const atual = document.getElementById("block-screen");
+        if (novoPopup && atual) {
+          atual.replaceWith(novoPopup);
+        }
+      });
+  }, 30000); // 60.000 ms = 60 segundos
 </script>
